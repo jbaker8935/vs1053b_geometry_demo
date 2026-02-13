@@ -52,9 +52,11 @@ Sequence of operation:
 
 VS1053b memory use has been limited to X-RAM and Y-RAM that VLSI says won't conflict with audio processing.  However, this plugin does do a lot of crunching which impacts quality of simultaneous audio.  So generally it is an either/or situation.  with few objects on screen you may be able to get away with short effects.
 
-To support larger objects OR to support caching definitions of objects in VS1053B RAM I would need to take over the chip and disable audio use completely.
+## What's new
+- Added eight object save slots to vs1053b memory so objects can be switched without reloading via SCI
+- Demo 'M' key will display mixed objects
 
-# Build / Compile
+## Build / Compile
 - llvm-mos.   i used the version enhanced by andrew2936 in a WSL2 environment.
 - Makefile should provide build hints.
 - Or just use the interface code as a reference and use your own build workflow.

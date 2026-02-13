@@ -23,12 +23,13 @@ static void record_key_state(InputState *state, char key, bool pressed) {
 			state->hold.rotateDown = pressed;
 			if (pressed) state->edge.rotateDown = true;
 			break;
-		case '1': if (pressed) objectIndex = 0; break;
-		case '2': if (pressed) objectIndex = 1; break;
-		case '3': if (pressed) objectIndex = 2; break;
-		case '4': if (pressed) objectIndex = 3; break;
-		case '5': if (pressed) objectIndex = 4; break;
+		case '1': if (pressed) objectIndex = 0; state->edge.many = false; break;
+		case '2': if (pressed) objectIndex = 1; state->edge.many = false; break;
+		case '3': if (pressed) objectIndex = 2; state->edge.many = false; break;
+		case '4': if (pressed) objectIndex = 3; state->edge.many = false; break;
+		case '5': if (pressed) objectIndex = 4; state->edge.many = false; break;
 		case 'x': case 'X': if (pressed) state->edge.exit = true; break;
+		case 'm': case 'M': if (pressed) state->edge.many = true; break;		
 		case 'c': case 'C':
 			// Edge-only: request a reset on press; ignore release.
 			if (pressed) state->edge.resetCam = true;

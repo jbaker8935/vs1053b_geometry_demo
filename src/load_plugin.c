@@ -3,7 +3,7 @@
 
 EMBED(plugin_data,"assets/plugin.bin",0x10000lu);
 
-#define PLUGIN_SIZE 3577
+#define PLUGIN_SIZE 3821
 
 
 void loadVS1053Plugin() {

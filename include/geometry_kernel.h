@@ -12,6 +12,9 @@
 #define SCI_WRAM        0x06
 #define SCI_AIADDR      0x0A
 #define SCI_AICTRL0     0x0C
+#define SCI_AICTRL1     0x0D
+#define SCI_AICTRL2     0x0E
+#define SCI_AICTRL3     0x0F
 // Memory space offsets for WRAMADDR
 #define IRAM_OFFSET     0x8000
 #define XRAM_OFFSET     0x0000
@@ -90,6 +93,12 @@
 
 // Status and Projection Parameters 
 
+#define VS_GEOM_STATUS_IDLE         0
+#define VS_GEOM_STATUS_BUSY         1
+#define VS_GEOM_STATUS_DONE         0xABCD
+#define VS_GEOM_STATUS_SAVE_ERROR   0xE201
+#define VS_GEOM_STATUS_LOAD_ERROR   0xE202
+
 #define VS_GEOM_LR0_SAVE        (VS_GEOM_X_FREE_BASE + 0xA2)  // Save/restore LR0 (X-RAM)
 #define VS_GEOM_STATUS          (VS_GEOM_X_FREE_BASE + 0xA3)  // 0=idle, 1=busy, 0xABCD=done (X-RAM)
 #define VS_GEOM_ENABLE_PROJECT  (VS_GEOM_X_FREE_BASE + 0xA4)  // Non-zero to enable projection
@@ -139,5 +148,8 @@ void setup_projection_params(int16_t focal, int16_t half_w, int16_t half_h,
 void trigger_geometry_kernel(void);
 void geometry_kernel_reset(void);
 uint8_t geometry_kernel_wait_complete(uint16_t timeout_ms);
+bool geometry_kernel_save(uint16_t slot);
+bool geometry_kernel_load(uint16_t slot);
+void load_model_to_plugin(const Model3D* model, uint8_t slot);
 
 #endif // GEOMETRY_KERNEL_H

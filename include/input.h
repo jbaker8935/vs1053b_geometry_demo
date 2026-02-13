@@ -18,7 +18,8 @@ typedef struct {
 	bool rotateUp;
 	bool rotateDown;
 	bool resetCam;
-bool exit;
+	bool exit;
+	bool many;
 	uint8_t objectIndex;	
 } InputEdge;
 

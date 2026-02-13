@@ -105,6 +105,14 @@ void setup_model_vertices(const Model3D* model) {
     }
 }
 
+void load_model_to_plugin(const Model3D* model, uint8_t slot) {
+    setup_model_vertices(model);
+    setup_model_edges(model);
+    if(!geometry_kernel_save(slot)) {
+        printf("Error saving model to plugin slot %d\n", slot);
+    }
+}
+
 void setup_model_edges(const Model3D* model) {
     // Write the total number of edges
     vs1053_write_mem(VS_GEOM_N_EDGES, model->edge_count);
@@ -125,13 +133,33 @@ void trigger_geometry_kernel(void) {
     vs1053_write_sci(SCI_AICTRL0, VS_GEOM_TRIGGER_MAGIC);  // Set trigger to start processing 
 }
 
+// Save Object to internal slot
+bool geometry_kernel_save(uint16_t slot) {
+    vs1053_write_sci(SCI_AICTRL1, slot);  // Set trigger to start processing 
+    if(geometry_kernel_wait_complete(100) == 1) { // wait for completion (or error)
+        return true;
+    }
+    return false;
+}
+
+// load Object from internal slot
+bool geometry_kernel_load(uint16_t slot) {
+    vs1053_write_sci(SCI_AICTRL2, slot);  // Set trigger to start processing 
+    if(geometry_kernel_wait_complete(100) == 1) { // wait for completion (or error)
+        return true;
+    }
+    return false;
+}
+
 uint8_t geometry_kernel_status(void) {
    volatile uint16_t status = vs1053_read_mem(VS_GEOM_STATUS);
     
-    if (status == 0xABCD) {
+    if (status == VS_GEOM_STATUS_DONE) {
         return 2;  // Complete
-    } else if (status == 0x0001) {
+    } else if (status == VS_GEOM_STATUS_BUSY) {
         return 1;  // Busy
+    } else if (status == VS_GEOM_STATUS_SAVE_ERROR || status == VS_GEOM_STATUS_LOAD_ERROR) {
+        return 3;  // Error
     } else {
         return 0;  // Idle
     }
@@ -145,8 +173,10 @@ uint8_t geometry_kernel_wait_complete(uint16_t timeout_ms) {
 
         raw_status = vs1053_read_mem(VS_GEOM_STATUS);
         
-        if (raw_status == 0xABCD) {
+        if (raw_status == VS_GEOM_STATUS_DONE) {
             return 1;  // Complete
+        } else if (raw_status == VS_GEOM_STATUS_SAVE_ERROR || raw_status == VS_GEOM_STATUS_LOAD_ERROR) {
+            return 2;  // Error
         }
 
         // Small delay to avoid hammering SCI interface

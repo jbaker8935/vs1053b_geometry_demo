@@ -25,8 +25,6 @@
 #define VS_FIFO_COUNT 0xD704   //2 bytes
 #define VS_FIFO_DATA 0xD707
 
-#include "f256lib.h"
-
 void initVS1053Plugin(uint16_t);
 void boostVSClock(void);
 void boostVSBass(void);

@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include "../include/3d_object.h"
 
-void transform_instance_to_screen(const Instance3D *instance, const Camera *camera, bool set_model);
+void transform_instance_to_screen(const Instance3D *instance, const Camera *camera);
 
 #endif // PIPELINE_3D_H

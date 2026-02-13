@@ -4,18 +4,11 @@
 
 // transforms instance vertices/edges to screen space
 // output is written to global line list buffer
-void transform_instance_to_screen(const Instance3D *instance, const Camera *camera, bool set_model) {
-
-    const Model3D *model = instance->model;
+void transform_instance_to_screen(const Instance3D *instance, const Camera *camera) {
 
     setup_object_params(
         instance->pitch, instance->yaw, instance->roll, instance->scale,
         instance->position.x, instance->position.y, instance->position.z);
-
-    if (set_model) {
-        setup_model_vertices(model);
-        setup_model_edges(model);
-    }
 
     trigger_geometry_kernel();
     
