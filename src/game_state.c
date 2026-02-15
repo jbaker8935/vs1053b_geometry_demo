@@ -1,8 +1,16 @@
 #include "../include/game_state.h"
 #include "../include/3d_object.h"
 #include "../include/drone_show.h"
+#include "../include/destruct.h"
 #include "../include/input.h"
+
+/* minimal text API (avoid including f256lib.h here to prevent typedef collisions) */
+extern void textGotoXY(unsigned char x, unsigned char y);
+extern void textPrint(const char *message);
+extern void textPrintUInt(unsigned int value);
+
 #include <string.h>
+#include <stdio.h>
 
 extern void setup_camera_params(uint8_t pitch, uint8_t yaw, uint8_t roll,
                                  int16_t pos_x, int16_t pos_y, int16_t pos_z);
@@ -46,32 +54,53 @@ GameContext *game_state_data(void) {
 	return &g_ctx;
 }
 
-void game_state_init(void) {
+void game_state_init(GameMode mode) {
 	memset(&g_ctx, 0, sizeof(g_ctx));
-	g_ctx.mode = STATE_3D_TEST;
-	g_ctx.arenaCount = 0;
-	g_ctx.activeArena = 0;
+	g_ctx.mode = mode;
 	g_ctx.mapOverlayVisible = false;
 	reset_player(&g_ctx.player);
 	// Initialize 3D wireframe instances from generated paths (SoA layout)
-	// initialize all as cubes
-	g_ctx.wireframe.instance_count = DRONE_COUNT;
-	// Load the first animation frame once; it populates the full `frame_drones[]` array.
-	resetDroneAnimation();
-	loadNextDroneFrame();
-	for (uint8_t i = 0; i < DRONE_COUNT; ++i) {
-		/* Assign model based on instance index modulo 5:
-		   0 -> cube, 1 -> tetrahedra, 2 -> square pyramid,
-		   3 -> octahedron 4 -> hexagonal pyramid */
-		g_ctx.wireframe.instances[i].model = &g_model_tetrahedra; // default model
+	switch (mode) {
+		case STATE_DRONE_SHOW:
+			g_ctx.wireframe.instance_count = DRONE_COUNT;
+			// Load the first animation frame once; it populates the full `frame_drones[]` array.
+			resetDroneAnimation();
+			loadNextDroneFrame();
+			break;
+		case STATE_DESTRUCT:
+			g_ctx.wireframe.instance_count = DESTRUCT_COUNT;
+			resetDestructAnimation();
+			loadNextDestructFrame();
+			break;
+		default:
+			g_ctx.wireframe.instance_count = 0;
+			break;
+	}
+	for (uint8_t i = 0; i < g_ctx.wireframe.instance_count; ++i) {
 
-		int16_t sx = frame_drones[i].x;
-		int16_t sy = frame_drones[i].y;
-		int16_t sz = frame_drones[i].z;
+		g_ctx.wireframe.instances[i].model = &g_model_cube; // default model
+
+		int16_t sx, sy, sz;
+		uint8_t syaw, spitch, sroll;
+		if (g_ctx.mode == STATE_DESTRUCT) {
+			sx = frame_destruct[i].x;
+			sy = frame_destruct[i].y;
+			sz = frame_destruct[i].z;
+			syaw = frame_destruct[i].yaw;
+			spitch = frame_destruct[i].pitch;
+			sroll = frame_destruct[i].roll;
+		} else {
+			sx = frame_drones[i].x;
+			sy = frame_drones[i].y;
+			sz = frame_drones[i].z;
+			syaw = frame_drones[i].yaw;
+			spitch = frame_drones[i].pitch;
+			sroll = frame_drones[i].roll;
+		}
 		g_ctx.wireframe.instances[i].position = (vec3_t){sx, sy, sz};
-		g_ctx.wireframe.instances[i].yaw = frame_drones[i].yaw;
-		g_ctx.wireframe.instances[i].pitch = frame_drones[i].pitch;
-		g_ctx.wireframe.instances[i].roll = frame_drones[i].roll;
+		g_ctx.wireframe.instances[i].yaw = syaw;
+		g_ctx.wireframe.instances[i].pitch = spitch;
+		g_ctx.wireframe.instances[i].roll = sroll;
 		g_ctx.wireframe.instances[i].scale = 128; // 1.0 in Q7
 
 	}
@@ -98,46 +127,83 @@ int16_t game_state_clamp16(int16_t value, int16_t min, int16_t max) {
 }
 
 void game_state_update_3d(InputState *input) {
+
+	g_ctx.mode = droneShow ? STATE_DRONE_SHOW : STATE_DESTRUCT;
 	
 	if(input->edge.resetCam) {
 		reset_camera();
 	}
-	loadNextDroneFrame();  // loads frame_drones array
+
+	switch (g_ctx.mode) {
+		case STATE_DRONE_SHOW:
+			loadNextDroneFrame();
+			break;
+		case STATE_DESTRUCT:
+			loadNextDestructFrame();
+			break;
+		default:
+			break;
+	}
+
+	/* Debug: show current destruct frame index */
+	if (g_ctx.mode == STATE_DESTRUCT) {
+		char buffer[32];
+		textGotoXY(0, 2);
+		textPrint("Destruct frame: ");
+		sprintf(buffer, "%05u", destruct_get_frame());
+		textPrint(buffer);
+	}
 	
 	for (uint8_t i = 0; i < g_ctx.wireframe.instance_count ; ++i) {
-
-		switch (objectIndex) {
-			case 0:
-				g_ctx.wireframe.instances[i].model = &g_model_cube;  // DEBUG: line instead of cube
+		switch(g_ctx.mode) {
+			case STATE_DRONE_SHOW:
+				switch (objectIndex) {
+					case 0:
+						g_ctx.wireframe.instances[i].model = &g_model_cube;  // DEBUG: line instead of cube
+						break;
+					case 1:
+						g_ctx.wireframe.instances[i].model = &g_model_tetrahedra;
+						break;
+					case 2:
+						g_ctx.wireframe.instances[i].model = &g_model_square_pyramid;
+						break;
+					case 3:
+						g_ctx.wireframe.instances[i].model = &g_model_octahedron;
+						break;
+					case 4:
+						g_ctx.wireframe.instances[i].model = &g_model_hexagonal_pyramid;
+						break;				
+					default:
+						g_ctx.wireframe.instances[i].model = &g_model_cube;
+						break;
+				}
 				break;
-			case 1:
-				g_ctx.wireframe.instances[i].model = &g_model_tetrahedra;
-				break;
-			case 2:
-				g_ctx.wireframe.instances[i].model = &g_model_square_pyramid;
-				break;
-			case 3:
-				g_ctx.wireframe.instances[i].model = &g_model_octahedron;
-				break;
-			case 4:
-				g_ctx.wireframe.instances[i].model = &g_model_hexagonal_pyramid;
-				break;				
-			default:
+			case STATE_DESTRUCT:
+				// cube only for destruct animation
 				g_ctx.wireframe.instances[i].model = &g_model_cube;
+				break;
+			default:
 				break;
 		}
 
-
-		g_ctx.wireframe.instances[i].position.x = frame_drones[i].x;
-		g_ctx.wireframe.instances[i].position.y = frame_drones[i].y;
-		g_ctx.wireframe.instances[i].position.z = frame_drones[i].z;
-		g_ctx.wireframe.instances[i].yaw = frame_drones[i].yaw;
-		g_ctx.wireframe.instances[i].pitch = frame_drones[i].pitch;
-		g_ctx.wireframe.instances[i].roll = frame_drones[i].roll;
+		if (g_ctx.mode == STATE_DESTRUCT) {
+			g_ctx.wireframe.instances[i].position.x = frame_destruct[i].x;
+			g_ctx.wireframe.instances[i].position.y = frame_destruct[i].y;
+			g_ctx.wireframe.instances[i].position.z = frame_destruct[i].z;
+			g_ctx.wireframe.instances[i].yaw = frame_destruct[i].yaw;
+			g_ctx.wireframe.instances[i].pitch = frame_destruct[i].pitch;
+			g_ctx.wireframe.instances[i].roll = frame_destruct[i].roll;
+		} else {
+			g_ctx.wireframe.instances[i].position.x = frame_drones[i].x;
+			g_ctx.wireframe.instances[i].position.y = frame_drones[i].y;
+			g_ctx.wireframe.instances[i].position.z = frame_drones[i].z;
+			g_ctx.wireframe.instances[i].yaw = frame_drones[i].yaw;
+			g_ctx.wireframe.instances[i].pitch = frame_drones[i].pitch;
+			g_ctx.wireframe.instances[i].roll = frame_drones[i].roll;
+		}
 		g_ctx.wireframe.instances[i].scale = 64; // fixed scale 50% Q7
 
 	}
-
 
 	int16_t speed = 70; // Movement speed
 

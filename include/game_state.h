@@ -19,12 +19,8 @@
 #define INSTANCE_COUNT 27
 
 typedef enum {
-	STATE_INIT,
-	STATE_TITLE,
-	STATE_TUNNEL,
-	STATE_ARENA,
-	STATE_3D_TEST,
-	STATE_GAMEOVER
+	STATE_DRONE_SHOW,
+	STATE_DESTRUCT
 } GameMode;
 
 typedef struct {
@@ -103,7 +99,7 @@ typedef struct {
 } GameContext;
 
 GameContext *game_state_data(void);
-void game_state_init(void);
+void game_state_init(GameMode mode);
 void game_state_enter_arena(uint8_t arenaId);
 void game_state_enter_tunnel(uint8_t from, uint8_t to);
 void game_state_toggle_map(void);

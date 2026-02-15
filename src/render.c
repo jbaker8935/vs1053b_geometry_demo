@@ -74,7 +74,7 @@ __attribute__((noinline)) void render_frame(const GameContext *ctx) {
         }
 
         transform_instance_to_screen(inst, &ctx->wireframe.camera);
-        out_edge_count = get_screen_edges(inst->model, 3);  // set to fixed color 'color' could be used here
+        out_edge_count = get_screen_edges(inst->model, 1);  // set to fixed color 'color' could be used here
         draw_lines_asm(draw_layer);
         // Clear line list after drawing to leave a clean slate for the next instance.
         reset_line_list();

@@ -8,6 +8,7 @@
 #include "../include/3d_math.h"
 #include "../include/muVS1053b.h"
 #include "../include/geometry_kernel.h"
+#include "../include/timer.h"
 
 
 // Declare the function we need
@@ -28,14 +29,14 @@ void init_models(void) {
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
-
+    GameMode current_mode = STATE_DRONE_SHOW; // default mode
 
     f256Init();
     loadVS1053Plugin();
     initialize_plugin();
     boostVSClock();
 
-    game_state_init();
+    game_state_init(STATE_DRONE_SHOW);
     input_handler_init();
     video_init();
 
@@ -45,21 +46,35 @@ int main(int argc, char *argv[]) {
     init_models();
 
     GameContext *ctx = game_state_data();
-    ctx->mode = STATE_3D_TEST;
-
+    textGotoXY(0, 0);
     textPrint("VS1053b -- Objects: 1-5,M Cam Pos: WASDTGC Cam Yaw: QE Cam Pitch: RF Exit: X\n");
-
+    textGotoXY(0, 1);
+    textPrint("O: Drone Show I: Destruct Animation");
+    setAlarm(TIMER_ALARM_GENERAL0,1);
     while (true) {
         input_handler_poll();
         InputState *input = input_state_data();
         if (input->edge.exit) {
             break;
         }
+        if (current_mode == STATE_DRONE_SHOW && !droneShow) {
+            current_mode = STATE_DESTRUCT;
+            game_state_init(current_mode);
+        } else if (current_mode == STATE_DESTRUCT && droneShow) {
+            current_mode = STATE_DRONE_SHOW;
+            game_state_init(current_mode);
+        }
+
+
         ctx = game_state_data();
         game_state_update_3d(input);
         render_frame(ctx);
         game_state_increment_frame();
         input_state_clear_edges(input);
+        while(!checkAlarm(TIMER_ALARM_GENERAL0)) {
+            // wait for next frame tick
+        }
+        setAlarm(TIMER_ALARM_GENERAL0, 1); // schedule next frame tick
      }
     return 0;
 }

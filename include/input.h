@@ -39,5 +39,6 @@ InputState *input_state_data(void);
 void input_state_init(void);
 void input_state_clear_edges(InputState *state);
 extern uint16_t objectIndex;
+extern bool droneShow;
 
 #endif // INPUT_H

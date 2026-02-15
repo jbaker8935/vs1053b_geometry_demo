@@ -28,6 +28,8 @@ static void record_key_state(InputState *state, char key, bool pressed) {
 		case '3': if (pressed) objectIndex = 2; state->edge.many = false; break;
 		case '4': if (pressed) objectIndex = 3; state->edge.many = false; break;
 		case '5': if (pressed) objectIndex = 4; state->edge.many = false; break;
+		case 'o': case 'O': if (pressed) droneShow = true; break;
+		case 'i': case 'I': if (pressed) droneShow = false; break;					
 		case 'x': case 'X': if (pressed) state->edge.exit = true; break;
 		case 'm': case 'M': if (pressed) state->edge.many = true; break;		
 		case 'c': case 'C':
