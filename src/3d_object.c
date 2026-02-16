@@ -3,9 +3,34 @@
 #include <stdbool.h>
 #include <string.h>
 
-// Cube vertices: scaled to fit int16, centered at origin
-// Scale by 100 for visibility (25% of previous 1000)
 #define SCALE 200
+
+static const int16_t g_empty_vx[1] = {
+    0
+};
+static const int16_t g_empty_vy[1] = {
+    0
+};
+static const int16_t g_empty_vz[1] = {
+    0
+};
+static const uint8_t g_empty_edge_a[0] = {};
+static const uint8_t g_empty_edge_b[0] = {};
+const Model3D g_model_empty = {
+    .vertex_count = 1,  
+    .edge_count = 0,    
+    .vx = g_empty_vx,
+    .vy = g_empty_vy,
+    .vz = g_empty_vz,
+    .edge_a = g_empty_edge_a,
+    .edge_b = g_empty_edge_b,
+    .center_x = 0,
+    .center_y = 0,
+    .center_z = 0,
+    .radius = 1, 
+};
+
+
 
 static const int16_t g_cube_vx[8] = {
     -1 * SCALE, -1 * SCALE, -1 * SCALE, -1 * SCALE,

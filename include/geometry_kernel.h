@@ -132,10 +132,12 @@
 #define VS_GEOM_EDGE_VISIBLE    0x0001  // Edge is visible
 #define VS_GEOM_EDGE_CLIP_V0    0x0002  // V0 was clipped (new vertex created)
 #define VS_GEOM_EDGE_CLIP_V1    0x0004  // V1 was clipped (new vertex created)
+#define VS_GEOM_EDGE_NEAR       0x0008  // Edge midpoint depth classified as near
 #define VS_GEOM_EDGE_CULLED     0x0000  // Edge is culled
 
 extern const int16_t sin_table[256];
 uint8_t get_screen_edges(Model3D * model, uint8_t color);
+uint8_t get_screen_edges_with_depth(Model3D *model, uint8_t near_color, uint8_t far_color);
 // geometry kernel functions
 void setup_object_params(uint8_t pitch, uint8_t yaw, uint8_t roll, uint8_t scale,
                          int16_t pos_x, int16_t pos_y, int16_t pos_z);
@@ -151,5 +153,10 @@ uint8_t geometry_kernel_wait_complete(uint16_t timeout_ms);
 bool geometry_kernel_save(uint16_t slot);
 bool geometry_kernel_load(uint16_t slot);
 void load_model_to_plugin(const Model3D* model, uint8_t slot);
+void setup_object_angle_scale(uint8_t pitch, uint8_t yaw, uint8_t roll, uint8_t scale);
+void setup_object_pos(int16_t pos_x, int16_t pos_y, int16_t pos_z);
+void get_view_z(int16_t * out_zbuffer, uint8_t max_verts);
+void setup_projection_disable(void);
+void setup_projection_enable(void);
 
 #endif // GEOMETRY_KERNEL_H

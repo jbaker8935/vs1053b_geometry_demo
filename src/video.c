@@ -62,6 +62,8 @@ void video_init(void) {
 	graphicsDefineColor(0, 8, 255, 200, 0);
 	graphicsDefineColor(0, 9, 0, 255, 150);
 	graphicsDefineColor(0, 10, 220, 20, 60);
+	graphicsDefineColor(0, 11, 95, 205, 228); // #5fcdE4 Light Blue
+	graphicsDefineColor(0, 12, 61, 133, 148);  // #3D8594 Medium Blue
 	
 	POKE(0xD00D, 0x33);
     POKE(0xD00E, 0x33);

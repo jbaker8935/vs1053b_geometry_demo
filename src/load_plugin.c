@@ -3,7 +3,7 @@
 
 EMBED(plugin_data,"assets/plugin.bin",0x10000lu);
 
-#define PLUGIN_SIZE 3821
+#define PLUGIN_SIZE 4167
 
 
 void loadVS1053Plugin() {
@@ -56,8 +56,9 @@ void boostVSClock()
 {
 //target the clock register
 // Recommended SC_MULT=3.5×,SC_ADD=1.0×(SCI_CLOCKF=0x8800).
+// Recommended max SC_MULT=4.5 (SCI_CLOCK=0xC000)
 POKEW(VS_SCI_ADDR, VS_SCI_ADDR_CLOCKF);
-POKEW(VS_SCI_DATA,0x8800);
+POKEW(VS_SCI_DATA,0xc000);
 //trigger the command
 POKE(VS_SCI_CTRL,CTRL_Start);
 POKE(VS_SCI_CTRL,0);
