@@ -56,6 +56,7 @@ VS1053b memory use has been limited to X-RAM and Y-RAM that VLSI says won't conf
 - Added eight object save slots to vs1053b memory so objects can be switched without reloading via SCI
 - Demo 'M' key will display mixed objects
 - O key selects the drone show.   I key selects an iron soldier like building destruct
+- Added optional z based edge rendering. new api allows for rendering edges with a near or far color
 
 ## Build / Compile
 - llvm-mos.   i used the version enhanced by andrew2936 in a WSL2 environment.
